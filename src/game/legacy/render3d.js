@@ -2139,7 +2139,7 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
         let s = o.clone(!0);
         for (let e of [-0.7, 0.7]) {
           let t = new S(r, i);
-          (t.position.set(e, 0.72, -2.3), s.add(t));
+          (t.position.set(e, 0.7, -2.05), s.add(t));
         }
         ((s.rotation.y = Math.PI),
           (s.visible = !1),
