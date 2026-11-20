@@ -75,6 +75,16 @@ import {
   u as Ie,
   v as A,
 } from "./world.js";
+import { GLTFLoader as WBLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+// Bridge over water built from the player's bridge model (flattened + aligned to the road).
+var WB_URL = `/__l5e/assets-v1/4e32c0a7-2471-4f2c-a8b2-ffcc16ad531e/water-bridge.glb`,
+  WB_START = 3650,
+  WB_LEN = 663,
+  WB_LOOP = 5800,
+  onWaterBridge = (z) => {
+    let p = ((z % WB_LOOP) + WB_LOOP) % WB_LOOP;
+    return p > WB_START - 40 && p < WB_START + WB_LEN + 40;
+  };
 import { i as Le, n as Re, r as ze, t as Be } from "./quality.js";
 var Ve = () => ({
     roll: 0,
@@ -1621,6 +1631,8 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
     tunnelLightMat;
     tunnelLamp;
     bridges = [];
+    waterBridge = null;
+    oncoming = [];
     gantries = [];
     radars = [];
     player = null;
@@ -2073,6 +2085,7 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
           .catch((e) => console.error(`police model failed`, e));
       (await Promise.all([
         t,
+        this.loadWaterBridge(),
         ...e.map((e) =>
           ge(e)
             .then((t) => {
@@ -2081,8 +2094,63 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
             .catch((t) => console.error(`model ${e} failed`, t)),
         ),
       ]),
+        this.setupOncoming(),
         await this.precompileAll(),
         (this.canvas.dataset.modelsReady = `true`));
+    }
+    async loadWaterBridge() {
+      try {
+        let e = await new WBLoader().loadAsync(WB_URL),
+          n = new g();
+        (e.scene.traverse((e) => {
+          e instanceof S && ((e.receiveShadow = !0), (e.castShadow = !this.low));
+        }),
+          n.add(e.scene));
+        let r = new S(
+          new E(900, WB_LEN - 30),
+          new w({
+            color: 1919582,
+            roughness: 0.12,
+            metalness: 0.35,
+            polygonOffset: !0,
+            polygonOffsetUnits: -4,
+          }),
+        );
+        ((r.rotation.x = -Math.PI / 2),
+          r.position.set(0, -0.045, -WB_LEN / 2),
+          (r.receiveShadow = !0),
+          n.add(r),
+          (n.visible = !1),
+          (this.waterBridge = n),
+          this.scene.add(n));
+      } catch (e) {
+        console.error(`water bridge failed`, e);
+      }
+    }
+    setupOncoming() {
+      if (!this.waterBridge) return;
+      let e = [`sedan`, `hatch`, `suv`, `bmw`, `pickup`, `mustang`, `bus`, `porsche`],
+        n = this.low ? 4 : 8,
+        r = new t(0.35, 0.18, 0.08),
+        i = new C({ color: 16774368 });
+      for (let a = 0; a < n; a++) {
+        let o = this.templates.get(e[a % e.length]);
+        if (!o) continue;
+        let s = o.clone(!0);
+        for (let e of [-0.7, 0.7]) {
+          let t = new S(r, i);
+          (t.position.set(e, 0.72, -2.3), s.add(t));
+        }
+        ((s.rotation.y = Math.PI),
+          (s.visible = !1),
+          this.scene.add(s),
+          this.oncoming.push({
+            obj: s,
+            lane: a % 2 ? -19.6 : -11.9,
+            speed: 20 + J(a * 3.1) * 12,
+            base: a * ((WB_LEN + 240) / n),
+          }));
+      }
     }
     async precompileAll() {
       let e = [];
@@ -2994,10 +3062,24 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
       let r = -(n - e);
       ((this.tunnel.position.z = r),
         (this.tunnel.visible = r > -270 && r - t < G));
+      if (this.waterBridge) {
+        let t = e - Pe(e) + WB_START;
+        t + WB_LEN < e - G && (t += WB_LOOP);
+        let n = e - t,
+          r = this.waterBridge;
+        ((r.position.z = n), (r.visible = n > -300 && n - WB_LEN < G));
+        for (let i of this.oncoming) {
+          let a = WB_LEN + 240,
+            o = WB_LEN + 120 - ((i.base + i.speed * this.time) % a),
+            s = n - o;
+          ((i.obj.visible = r.visible && o > 0 && o < WB_LEN && s > -300 && s < G),
+            i.obj.position.set(i.lane, 0, s));
+        }
+      }
       let i = (t, n) => {
         let r = n
           .map((t) => this.nearest(e, t))
-          .filter((e) => e > -260 && e < G)
+          .filter((z) => z > -260 && z < G && !onWaterBridge(e - z))
           .sort((e, t) => t - e);
         t.forEach((e, t) => {
           let n = r[t];
@@ -3016,7 +3098,7 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
         r = this.quaternion,
         i = this.scaleVector,
         a = this.positionVector,
-        o = (e) => Ce(e);
+        o = (e) => Ce(e) || onWaterBridge(e);
       if (this.buildings && this.rooftops) {
         let s = 0;
         for (
@@ -3089,7 +3171,7 @@ var $ = { x: 0.275, y: 0.68, z: 2.37 },
       for (let t = u; s < 24; t++) {
         let c = t * 45;
         if (c > e + (this.low ? 120 : Zt)) break;
-        if (o(c)) continue;
+        if (Ce(c)) continue;
         let l = t % 2 == 0 ? -1 : 1,
           u = l * 8.4;
         (a.set(u, 0, -(c - e)),
