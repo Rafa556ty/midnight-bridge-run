@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Midnight Bridge Run
+
+https://revuelto-cockpit-dream.lovable.app  traga remodele o mapa inteiro fazendo diferente, tenho modelos. um de ponte que fica sobre a agua aonde muitos carros passam, voltam e vão, to com uma highway de noite, pode ser usada tanto pra noite quanto pra chuva. outro é uma cidade que tem predios sinal de transito, mas você precisaria ver da aonde o jogador viria e terminar a parte por que está sem predios ou lojas... lembrando que não pode ficar muito repetitivo, tem highway que não tem continuação ai você vai ter que ou copiar e colar e apagar uma placa ou outras coisas pra não ficar repetido ou fazer um do 0 inspirado no outro igual pra continuar. o que acha de melhor? e tem um que é tunel mas levando em conta que eu uso um galaxy a11 pra jogar, não precisa piorar grafico mas também teste no final.
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://midnight-bridge-run.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d0132d87-e927-42d7-a314-89d0e962b113).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
